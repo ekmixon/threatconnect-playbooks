@@ -18,9 +18,9 @@ class AppLib(object):
         self.lib_directory = None
 
         # All Python Version that will be searched
-        self.lib_major_version = 'lib_{}'.format(sys.version_info.major)
-        self.lib_minor_version = '{}.{}'.format(self.lib_major_version, sys.version_info.minor)
-        self.lib_micro_version = '{}.{}'.format(self.lib_minor_version, sys.version_info.micro)
+        self.lib_major_version = f'lib_{sys.version_info.major}'
+        self.lib_minor_version = f'{self.lib_major_version}.{sys.version_info.minor}'
+        self.lib_micro_version = f'{self.lib_minor_version}.{sys.version_info.micro}'
 
     def find_lib_directory(self):
         """Find the optimal lib directory."""
@@ -49,17 +49,21 @@ class AppLib(object):
             self._lib_directories = []
             app_path = os.getcwd()
             contents = os.listdir(app_path)
-            for c in contents:
-                # ensure content starts with lib, is directory, and is readable
-                if c.startswith('lib') and os.path.isdir(c) and (os.access(c, os.R_OK)):
-                    self._lib_directories.append(c)
+            self._lib_directories.extend(
+                c
+                for c in contents
+                if c.startswith('lib')
+                and os.path.isdir(c)
+                and (os.access(c, os.R_OK))
+            )
+
         return sorted(self._lib_directories, reverse=True)
 
     def run_app(self):
         """Run the App as a subprocess."""
         # Update system arguments
         sys.argv[0] = sys.executable
-        sys.argv[1] = '{}.py'.format(sys.argv[1])
+        sys.argv[1] = f'{sys.argv[1]}.py'
 
         # Make sure to exit with the return value from the subprocess call
         self._app_process = subprocess.Popen(sys.argv)
@@ -75,10 +79,9 @@ class AppLib(object):
         #             os.path.split(inspect.getfile(inspect.currentframe()))[0], lib_directory)))
         lib_path = os.path.join(os.getcwd(), lib_directory)
         if 'PYTHONPATH' in os.environ:
-            os.environ['PYTHONPATH'] = '{}{}{}'.format(
-                lib_path, os.pathsep, os.environ['PYTHONPATH'])
+            os.environ['PYTHONPATH'] = f"{lib_path}{os.pathsep}{os.environ['PYTHONPATH']}"
         else:
-            os.environ['PYTHONPATH'] = '{}'.format(lib_path)
+            os.environ['PYTHONPATH'] = f'{lib_path}'
 
 
 if __name__ == '__main__':
@@ -89,7 +92,7 @@ if __name__ == '__main__':
 
     # No reason to continue if no appropriate lib directory found
     if ld is None:
-        print('Failed to find lib directory ({}).'.format(al.lib_directories))
+        print(f'Failed to find lib directory ({al.lib_directories}).')
         sys.exit(1)
 
     # update the OS environment for lib_directory path

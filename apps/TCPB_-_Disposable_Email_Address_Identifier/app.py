@@ -26,7 +26,8 @@ class App(PlaybookApp):
 
         if input_data in self.disposable_domains:
             self.tcex.playbook.create_output('isDisposableEmailHostname', 1, 'String')
-            self.exit_message = '{} is found in the list disposable email service hostnames ({})'.format(input_data, DISPOSABLE_EMAIL_DOMAINS_ENDPOINT)
+            self.exit_message = f'{input_data} is found in the list disposable email service hostnames ({DISPOSABLE_EMAIL_DOMAINS_ENDPOINT})'
+
         else:
             self.tcex.playbook.create_output('isDisposableEmailHostname', 0, 'String')
-            self.exit_message = '{} is not found in the list of disposable email service hostnames ({})'.format(input_data, DISPOSABLE_EMAIL_DOMAINS_ENDPOINT)
+            self.exit_message = f'{input_data} is not found in the list of disposable email service hostnames ({DISPOSABLE_EMAIL_DOMAINS_ENDPOINT})'

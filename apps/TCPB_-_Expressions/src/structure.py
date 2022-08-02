@@ -103,9 +103,7 @@ def reduce_structure(value):
     """Reduce a structure to a prototypical form"""
 
     if isinstance(value, dict):
-        result = {}
-        for key in value:
-            result[key] = reduce_structure(value[key])
+        result = {key: reduce_structure(value[key]) for key in value}
     elif isinstance(value, (list, tuple)):
         result = [reduce_structure(x) for x in value]
         if len(result) > 1:
@@ -199,9 +197,6 @@ def describe_string(value):
                         if not condition(mv):
                             # print(f'\t{name} condition failed {condition}')
                             all_conditions = False
-                        else:
-                            # print(f'\t{name} condition passed {condition}')
-                            pass
                     except Exception:
                         all_conditions = False
                         # print(f'\t{name} condition raised exception {condition}')
@@ -223,29 +218,22 @@ def describe_string(value):
         return 'string'
 
     name, regex, search, match, conditions = possibles[0]
-    #
-    # TODO -- apply as many of the non-overlapping possibles in one
-    # pass
-    #
+    if not search:
+        return name
 
-    if search:
-        left = search.string[: search.start()]
-        right = search.string[search.end() :]  # noqa: E203
+    left = search.string[: search.start()]
+    right = search.string[search.end() :]  # noqa: E203
 
-        r = []
-        if left:
-            left = describe_string(left)
-            if left:
-                r.append(left)
-        r.append(name)
+    r = []
+    if left:
+        left = describe_string(left)
+    if left:
+        r.append(left)
+    r.append(name)
 
-        if right:
-            right = describe_string(right)
-            if right:
-                r.append(right)
+    if right:
+        right = describe_string(right)
+    if right:
+        r.append(right)
 
-        result = ' '.join(r)
-    else:
-        result = name
-
-    return result
+    return ' '.join(r)

@@ -16,5 +16,5 @@ class App(PlaybookApp):
         input_string = self.tcex.playbook.read(self.args.string)
         hex_string = '0x'
         for char in input_string:
-            hex_string += str(hex(ord(char))).split('x')[-1]
+            hex_string += hex(ord(char)).split('x')[-1]
         self.tcex.playbook.create_output('hex', hex_string, 'String')

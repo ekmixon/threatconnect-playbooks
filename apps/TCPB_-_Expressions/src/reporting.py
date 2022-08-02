@@ -33,10 +33,8 @@ class Reporting:
                 and thing[1] not in self.headings
             ):
                 return depth  # this is a (heading, specifier) tuple
-            return min([self.count_depth(x, depth + 1) for x in thing])
-        if isinstance(thing, dict):
-            return 3
-        return depth
+            return min(self.count_depth(x, depth + 1) for x in thing)
+        return 3 if isinstance(thing, dict) else depth
 
     # pylint: disable=redefined-builtin
 
@@ -152,10 +150,7 @@ class Reporting:
             rowdict = OrderedDict()
             for colno, name in enumerate(headers):
                 # N.B. rows wider than row 0 are silently trimmed here
-                if colno >= len(row):
-                    value = ''
-                else:
-                    value = row[colno]
+                value = '' if colno >= len(row) else row[colno]
                 if name in rowdict:
                     raise ValueError('Duplicate column name {name!r}')
                 rowdict[name] = value
@@ -217,10 +212,7 @@ class Reporting:
     def headings(self):
         """Return the keys of row 0 of the data"""
 
-        if self.data:
-            return list(self.data[0].keys())
-
-        return []
+        return list(self.data[0].keys()) if self.data else []
 
     def normalize_columns(self, columns, auto_columns):
         """Turn a list of columns into a list of column dictionaries"""
@@ -290,12 +282,9 @@ class Reporting:
                         rows[name] = rows.get(name, 0) + 1
                         max_width[name] = max(max_width.get(name, 0), len(v))
             else:
-                columnno = 0
-                for value in row:
+                for columnno, value in enumerate(row):
                     name = data[0][columnno]
                     name = str(name)
-                    columnno += 1
-
                     value = str(value)
 
                     for v in value.split('\n'):
@@ -305,23 +294,16 @@ class Reporting:
 
         column_names = list(max_width.keys())
         if headers:
-            colno = 0
-            for name in headers:
+            for colno, name in enumerate(headers):
                 while isinstance(name, (list, tuple)):
                     name = name[0]
-                if name in max_width:
-                    column_name = name
-                else:
-                    column_name = column_names[colno]
-                colno += 1
+                column_name = name if name in max_width else column_names[colno]
                 max_width[column_name] = max(max_width.get(column_name, 0), len(name))
 
         # let's see if we can fit all the desired widths
 
         desired_width = 0
         avg_desired = 0
-
-        scale = 1.0
 
         for column, width in max_width.items():
             desired_width += width
@@ -337,12 +319,7 @@ class Reporting:
         if not line_width:
             line_width = desired_width
 
-        # If the average desired is too wide, we scale down
-        # the outputs evenly.  This isn't great, since narrow
-        # columns should not be shrunk much
-        if avg_desired > line_width:
-            scale = line_width / avg_desired
-
+        scale = line_width / avg_desired if avg_desired > line_width else 1.0
         residual = line_width - avg_desired
 
         for column, awidth in average_width.items():

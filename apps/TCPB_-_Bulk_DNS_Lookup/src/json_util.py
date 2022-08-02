@@ -41,22 +41,17 @@ def identify(v, prefix, depth=0, strikeout=False):
     if depth > 1:
         warn(f'List depth exceeds 1, Arrays of Arrays detected with {prefix}')
         if strikeout:
-            out = {'name': '~' + camel2snake(prefix), 'type': 'StringArray'}
+            out = {'name': f'~{camel2snake(prefix)}', 'type': 'StringArray'}
         else:
             return []
 
     if isinstance(v, (str, int)) or v is None:
         outputVariables.append(out)
     elif isinstance(v, list):
-        if v:
-            v = v[0]
-            outputVariables.extend(identify(v, prefix, depth + 1, strikeout=strikeout))
-        else:
-            v = ''
-            outputVariables.extend(identify(v, prefix, depth + 1, strikeout=strikeout))
+        v = v[0] if v else ''
+        outputVariables.extend(identify(v, prefix, depth + 1, strikeout=strikeout))
     elif isinstance(v, dict):
-        keys = list(v.keys())
-        keys.sort()
+        keys = sorted(v.keys())
         for key in keys:
             s = v[key]
             outputVariables.extend(identify(s, f'{prefix}.{key}', depth, strikeout=strikeout))
@@ -100,8 +95,7 @@ def refold(v, prefix, depth=0, collection=None):
         for s in v:
             refold(s, prefix, depth + 1, collection)
     elif isinstance(v, dict) or hasattr(v, 'keys'):
-        keys = list(v.keys())
-        keys.sort()
+        keys = sorted(v.keys())
         for key in keys:
             s = v[key]
             refold(s, f'{prefix}.{key}', depth, collection)
@@ -118,22 +112,15 @@ def conform_objects(object_list, _path=None, _mapping=None, add_missing=False):
     Returns the conformed object list.
     """
 
-    if _mapping is None:
-        mapping = set()
-    else:
-        mapping = _mapping
-
-    if _path is None:
-        path = []
-    else:
-        path = _path
-
+    mapping = set() if _mapping is None else _mapping
+    path = [] if _path is None else _path
     path = path.copy()
 
     if isinstance(object_list, list):
-        result = []
-        for obj in object_list:
-            result.append(conform_objects(obj, path, mapping, add_missing=add_missing))
+        result = [
+            conform_objects(obj, path, mapping, add_missing=add_missing)
+            for obj in object_list
+        ]
 
         if _mapping is None:
             result = conform_objects(result, path, mapping, add_missing=True)

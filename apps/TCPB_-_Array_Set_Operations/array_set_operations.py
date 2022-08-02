@@ -37,34 +37,34 @@ def main():
     set_b = set(set_b)
 
     # log values
-    tcex.log.debug('Set A: {}'.format(set_a))
-    tcex.log.debug('Set B: {}'.format(set_b))
-    tcex.log.info('Set Operation: {}'.format(set_operation))
+    tcex.log.debug(f'Set A: {set_a}')
+    tcex.log.debug(f'Set B: {set_b}')
+    tcex.log.info(f'Set Operation: {set_operation}')
 
     result_bool = None
     results = None
-    if set_operation == 'Is Subset':
+    if set_operation == 'Difference':
+        results = list(set_a.difference(set_b))
+    elif set_operation == 'Intersection':
+        results = list(set_a.intersection(set_b))
+    elif set_operation == 'Is Subset':
         result_bool = set_a.issubset(set_b)
     elif set_operation == 'Is Superset':
         result_bool = set_a.issuperset(set_b)
-    elif set_operation == 'Union':
-        results = list(set_a.union(set_b))
-    elif set_operation == 'Intersection':
-        results = list(set_a.intersection(set_b))
-    elif set_operation == 'Difference':
-        results = list(set_a.difference(set_b))
     elif set_operation == 'Symmetric Difference':
         results = list(set_a.symmetric_difference(set_b))
 
+    elif set_operation == 'Union':
+        results = list(set_a.union(set_b))
     # create output
-    tcex.log.debug('Set results: {}'.format(results))
+    tcex.log.debug(f'Set results: {results}')
     if result_bool is not None:
         tcex.playbook.create_output('array.set.boolean', str(result_bool).lower())
     if results is not None:
         tcex.playbook.create_output('array.set.count', len(results))
         tcex.playbook.create_output('array.set.results', results)
 
-    tcex.message_tc('{} operation successfully on sets.'.format(set_operation))
+    tcex.message_tc(f'{set_operation} operation successfully on sets.')
     tcex.exit()
 
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(main_err)
         tcex.playbook.exit(1)

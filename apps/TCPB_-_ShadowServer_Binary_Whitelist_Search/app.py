@@ -17,9 +17,9 @@ class App(PlaybookApp):
         """
         url = 'http://bin-test.shadowserver.org/api?md5={}'
         md5 = self.tcex.playbook.read(self.args.md5_hash)
-        self.tcex.log.info('Querying the ShadowServer API for md5: {}'.format(md5))
+        self.tcex.log.info(f'Querying the ShadowServer API for md5: {md5}')
 
         response = requests.get(url.format(md5)).text
         response = response.replace(md5, '', 1).strip()
-        self.tcex.log.info('Response from ShadowServer API: {}'.format(response))
+        self.tcex.log.info(f'Response from ShadowServer API: {response}')
         self.tcex.playbook.create_output('shadowServerBinaryCheckResponse', response)

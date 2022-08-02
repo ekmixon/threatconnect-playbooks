@@ -38,7 +38,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(main_err)
         tcex.playbook.exit(1)

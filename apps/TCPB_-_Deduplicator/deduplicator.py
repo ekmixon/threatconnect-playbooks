@@ -20,10 +20,10 @@ def main():
     # read the string from the playbook to get the actual value of the argument
     incoming_list = tcex.playbook.read(args.incoming_list)
     # log the string
-    tcex.log.info('Incoming list (before deduplication): {}'.format(incoming_list))
+    tcex.log.info(f'Incoming list (before deduplication): {incoming_list}')
 
     deduplicated_list = list(set(incoming_list))
-    tcex.log.info('Deduplicated list: {}'.format(deduplicated_list))
+    tcex.log.info(f'Deduplicated list: {deduplicated_list}')
     # output the reversed string to downstream playbook apps
     tcex.playbook.create_output('deduplicatedList', deduplicated_list)
 

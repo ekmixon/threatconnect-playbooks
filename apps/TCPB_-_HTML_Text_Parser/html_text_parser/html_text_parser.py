@@ -18,7 +18,7 @@ def main():
     args = parse_arguments()
 
     html = tcex.playbook.read(args.html_input)
-    tcex.log.info('HTML Input: {}'.format(html))
+    tcex.log.info(f'HTML Input: {html}')
 
     # get the text from the HTML
     text = ''.join(BeautifulSoup(html, "html.parser").findAll(text=True))
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     except SystemExit:
         pass
     except Exception as e:  # if there are any strange errors, log it to the logging in the UI
-        err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(err)
         tcex.playbook.exit(1)

@@ -65,9 +65,9 @@ def _print_costs_matrix(a, b):
     # XXX mainly for debug purposes; consider removing
     m = costs_matrix(a, b, Costs())
 
-    print(' '.join('/ ' + b))
+    print(' '.join(f'/ {b}'))
 
-    for line, c in zip(m, ' ' + a):
+    for line, c in zip(m, f' {a}'):
         print(c, end=' ')
 
         for item in line:

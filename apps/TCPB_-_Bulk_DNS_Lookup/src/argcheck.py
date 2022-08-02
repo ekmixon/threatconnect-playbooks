@@ -55,16 +55,12 @@ def argcheck(
         if allow_empty:
             return value
 
-        if required and not allow_empty:
+        if required:
             if isinstance(base, dict):
                 raise KeyError(label, 'Value is required')  # pragma: no cover
             raise AttributeError(label, 'Value is required')
 
-        if default is not notfound:
-            return default
-
-        return None
-
+        return default if default is not notfound else None
     ovalue = value
 
     if types:

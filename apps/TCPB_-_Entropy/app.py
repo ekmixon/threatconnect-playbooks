@@ -22,13 +22,10 @@ class App(PlaybookApp):
             text = text.lower()
 
         # make a deduplicated list of all character codes in the text
-        character_code_set = list(set([ord(char) for char in text]))
+        character_code_set = list({ord(char) for char in text})
 
-        if not text:
-            entropy = 0
-        else:
-            entropy = 0
-
+        entropy = 0
+        if text:
             for char_code in character_code_set:
                 p_char = float(text.count(chr(char_code))) / len(text)
                 if p_char > 0:

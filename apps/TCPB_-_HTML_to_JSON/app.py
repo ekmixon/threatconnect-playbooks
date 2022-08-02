@@ -16,9 +16,7 @@ class App(PlaybookApp):
         This method should contain the core logic of the App.
         """
         html_string = self.tcex.playbook.read(self.args.html_string)
-        convert_tables = self.args.convert_tables
-
-        if convert_tables:
+        if convert_tables := self.args.convert_tables:
             output_json = html_to_json.convert_tables(html_string)
         else:
             output_json = html_to_json.convert(html_string)

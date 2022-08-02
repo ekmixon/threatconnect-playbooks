@@ -51,18 +51,18 @@ def main():
     slice_pattern = slice(splice_start, splice_end, splice_step)
 
     # log values
-    tcex.log.debug('String Array: {}'.format(array))
-    tcex.log.info('Splice Start: {}'.format(splice_start))
-    tcex.log.info('Splice End: {}'.format(splice_end))
-    tcex.log.info('Splice Step: {}'.format(splice_step))
+    tcex.log.debug(f'String Array: {array}')
+    tcex.log.info(f'Splice Start: {splice_start}')
+    tcex.log.info(f'Splice End: {splice_end}')
+    tcex.log.info(f'Splice Step: {splice_step}')
 
     # create output
     results = array[slice_pattern]
-    tcex.log.debug('Results: {}'.format(results))
+    tcex.log.debug(f'Results: {results}')
     tcex.playbook.create_output('array.splice.count', len(results))
     tcex.playbook.create_output('array.splice.results', results, array_type)
 
-    tcex.message_tc('{} items returned by splice.'.format(len(results)))
+    tcex.message_tc(f'{len(results)} items returned by splice.')
     tcex.exit()
 
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(main_err)
         tcex.playbook.exit(1)

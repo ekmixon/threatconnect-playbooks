@@ -29,7 +29,12 @@ class App(PlaybookApp):
         """
         self.tcex.log.info('Writing Output')
         self.tcex.playbook.create_output('cidr.addressCount', self.cidr.num_addresses, 'String')
-        self.tcex.playbook.create_output('cidr.rangeString', '{} - {}'.format(self.cidr.network_address, self.cidr.broadcast_address), 'String')
+        self.tcex.playbook.create_output(
+            'cidr.rangeString',
+            f'{self.cidr.network_address} - {self.cidr.broadcast_address}',
+            'String',
+        )
+
         self.tcex.playbook.create_output('cidr.broadcastAddress', self.cidr.broadcast_address, 'String')
         self.tcex.playbook.create_output('cidr.hostmask', self.cidr.hostmask, 'String')
         self.tcex.playbook.create_output('cidr.netmask', self.cidr.netmask, 'String')

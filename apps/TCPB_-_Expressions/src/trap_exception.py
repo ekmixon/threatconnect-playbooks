@@ -27,15 +27,8 @@ def trap(handler='handle_exception', classes=None):
                 if classes and not isinstance(e, classes):
                     raise
 
-                if args:
-                    self = args[0]
-                else:
-                    self = instance  # pragma: no cover
-
-                if callable(handler):
-                    handle = handler
-                else:
-                    handle = getattr(self, handler, None)
+                self = args[0] if args else instance
+                handle = handler if callable(handler) else getattr(self, handler, None)
                 if handle is None:
                     raise  # pragma: no cover
                 if not callable(handle):

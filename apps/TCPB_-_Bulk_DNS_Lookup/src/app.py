@@ -112,11 +112,14 @@ class App(PlaybookApp):
                         self.tcex.log.warning(f'Invalid EmailAddress {question} -- Skipped')
                         continue
                     question = question.split('@', 1)[1]
-                elif entity_type == 'Address':
+                elif entity_type in ['Address', 'Host']:
                     pass
-                elif entity_type == 'Host':
-                    pass
-                elif entity_type.upper() == 'URL':
+                elif (
+                    entity_type != 'EmailAddress'
+                    and entity_type != 'Address'
+                    and entity_type != 'Host'
+                    and entity_type.upper() == 'URL'
+                ):
                     question = urlparse(question).netloc
                 else:
                     self.tcex.log.warning(f'Unexpected indicator type {entity_type} -- Skipped')
@@ -215,11 +218,7 @@ class App(PlaybookApp):
 
     def write_one(self, name, value):
         """Write one output"""
-        if isinstance(value, list):
-            kind = 'StringArray'
-        else:
-            kind = 'String'
-
+        kind = 'StringArray' if isinstance(value, list) else 'String'
         if not isinstance(value, (list, dict, int, str, bool, float)) and value is not None:
             value = repr(value)
 
@@ -254,11 +253,15 @@ class App(PlaybookApp):
     def batch_resolve(self, count=4):
         """Fire up count resolver threads, then join on them"""
 
-        threads = []
-        for n in range(count):
-            threads.append(
-                Thread(group=None, target=self.resolver_thread, name=f'Resolver-{n+1}', daemon=True)
+        threads = [
+            Thread(
+                group=None,
+                target=self.resolver_thread,
+                name=f'Resolver-{n+1}',
+                daemon=True,
             )
+            for n in range(count)
+        ]
 
         for thread in threads:
             self.tcex.log.debug(f'Starting Resolver {thread.name}')
@@ -298,8 +301,7 @@ class App(PlaybookApp):
                         data = data[:-1]
                     result.append(data)
                 cname = str(answer.canonical_name)
-                if cname.endswith('.'):  # it will!
-                    cname = cname[:-1]
+                cname = cname.removesuffix('.')
                 answer = result
             self.tcex.log.debug(f'Answer: {question} ({cname})= {answer}')
             self.answers.append((question, cname, answer))
@@ -310,12 +312,12 @@ class App(PlaybookApp):
         name, rrtype = question
 
         try:
-            if rrtype == 'PTR' and self.transform_ptr:
-                answer = resolver.resolve_address(name, lifetime=3, search=False)
-            else:
-                answer = resolver.resolve(name, rrtype, lifetime=3, search=False)
+            return (
+                resolver.resolve_address(name, lifetime=3, search=False)
+                if rrtype == 'PTR' and self.transform_ptr
+                else resolver.resolve(name, rrtype, lifetime=3, search=False)
+            )
 
-            return answer
 
         except dns.exception.Timeout:
             self.tcex.log.debug(f'Timeout resolving {name} {rrtype}')

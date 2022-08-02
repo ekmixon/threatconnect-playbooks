@@ -14,10 +14,10 @@ class App(PlaybookApp):
 
     @staticmethod
     def convert_to_json(alert_object_list):
-        json_data = []
-        for alert_object in alert_object_list:
-            json_data.append(json.dumps(alert_object.tabular(fields='summary', timezone='UTC')))
-        return json_data
+        return [
+            json.dumps(alert_object.tabular(fields='summary', timezone='UTC'))
+            for alert_object in alert_object_list
+        ]
 
     def run(self):
         """Run the App main logic.
@@ -33,17 +33,13 @@ class App(PlaybookApp):
         client = Client(endpoint=alerta_api_endpoint, key=alerta_api_key)
 
         if not alert_id and not query:
-            self.tcex.log.info('Retrieving all alerts from {}'.format(alerta_api_endpoint))
+            self.tcex.log.info(f'Retrieving all alerts from {alerta_api_endpoint}')
             alerts = client.get_alerts()
         elif alert_id:
-            self.tcex.log.info('Retrieving alert with id "{}"'.format(alert_id))
+            self.tcex.log.info(f'Retrieving alert with id "{alert_id}"')
             alerts = [client.get_alert(alert_id)]
-        elif query:
+        else:
             raise NotImplementedError('The ability to search for a query is not implemented yet. If you need it, create an issue here: https://github.com/ThreatConnect-Inc/threatconnect-playbooks/issues')
-            # TODO: the difficulty here is that the query should be a tuple (I think) and I'm not sure how to (elegantly) convert the incoming string to a tuple
-            # self.tcex.log.info('Retrieving alerts matching the query: {}'.format(query))
-            # alerts = client.search(query)
-
         alerts_json = self.convert_to_json(alerts)
 
         self.tcex.playbook.create_output('alerta.alerts', alerts_json, 'StringArray')

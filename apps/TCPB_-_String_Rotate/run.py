@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Playbook App """
+
 import traceback
 import sys
 
@@ -39,6 +40,6 @@ if __name__ == '__main__':
         tcex.exit(msg=app.exit_message)
 
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.playbook.exit(1, main_err)

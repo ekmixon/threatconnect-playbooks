@@ -27,9 +27,7 @@ class AttrDict(OrderedDict):
         """Get attribute -- converts attribute to key"""
 
         value = self.get(attr, deflt)
-        if value is __notfound__:
-            return Phantom(attr, self)
-        return value
+        return Phantom(attr, self) if value is __notfound__ else value
 
     def __setattr__(self, attr, value):
         """Set attribute -- converts attribute to key"""
@@ -128,11 +126,7 @@ class Phantom:
         # print(f'Proxying {method} on {self!r}')
         if self._check_realized:
             ob = self._parent
-            if isinstance(ob, dict):
-                ob = ob.get(self._name)
-            else:
-                ob = getattr(ob, self._name)
-
+            ob = ob.get(self._name) if isinstance(ob, dict) else getattr(ob, self._name)
             # print(f'... resolved {self._name} of parent to {ob!r}')
             meth = getattr(ob, method)
             # print(f'... method is {meth!r}')
@@ -209,10 +203,7 @@ class Phantom:
 
         # print(f'__iter__ on {self!r}')
 
-        if self._check_realized:
-            return self._proxy('__iter__')
-
-        return self
+        return self._proxy('__iter__') if self._check_realized else self
 
     def __next__(self):
         """Phantoms can be iterated over, but they stop immediately"""
@@ -225,7 +216,4 @@ class Phantom:
     def __len__(self):
         """Phantoms have no length"""
 
-        if self._check_realized:
-            return self._proxy('__len__')
-
-        return 0
+        return self._proxy('__len__') if self._check_realized else 0

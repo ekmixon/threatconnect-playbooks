@@ -30,7 +30,7 @@ class App(PlaybookApp):
         # todo:add support for tcentities/tcentity arrays
         urls = self.tcex.playbook.read(self.args.urls, True)
 
-        self.tcex.log.info('Processing {} urls'.format(len(urls)))
+        self.tcex.log.info(f'Processing {len(urls)} urls')
 
         for url in urls:
             parsed_url = urlparse(url)
@@ -42,10 +42,10 @@ class App(PlaybookApp):
             self.fragments.append(parsed_url.fragment)
 
             if self.args.remove_query_strings:
-                url = url.replace('?{}'.format(parsed_url.query), '')
+                url = url.replace(f'?{parsed_url.query}', '')
 
             if self.args.remove_fragments:
-                url = url.replace('#{}'.format(parsed_url.fragment), '')
+                url = url.replace(f'#{parsed_url.fragment}', '')
 
             if self.args.remove_path:
                 url = url.replace(parsed_url.path, '')

@@ -18,12 +18,12 @@ def main():
     """."""
     args = parse_arguments()
     text = tcex.playbook.read(args.text)
-    tcex.log.info('Text before fanging: {}'.format(text))
+    tcex.log.info(f'Text before fanging: {text}')
 
     fanged_text = ioc_fanger.fang(text)
     # output the reversed string to downstream playbook apps
     tcex.playbook.create_output('fangedText', fanged_text)
-    tcex.log.info('Text after fanging: {}'.format(fanged_text))
+    tcex.log.info(f'Text after fanging: {fanged_text}')
     tcex.exit(0)
 
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     except SystemExit:
         pass
     except Exception as e:  # if there are any strange errors, log it to the logging in the UI
-        err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(err)
         tcex.playbook.exit(1)

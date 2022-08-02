@@ -18,7 +18,8 @@ class App(PlaybookApp):
         try:
             rotation = int(self.tcex.playbook.read(self.args.rotation))
         except ValueError:
-            message = 'The rotation number be an integer (the given rotation was: {})'.format(rotation)
+            message = f'The rotation number be an integer (the given rotation was: {rotation})'
+
             self.exit_message = message
             self.tcex.log.critical(message)
             self.tcex.exit(1, message)

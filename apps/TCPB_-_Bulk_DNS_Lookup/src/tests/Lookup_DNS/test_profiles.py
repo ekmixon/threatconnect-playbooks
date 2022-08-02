@@ -45,7 +45,7 @@ class TestProfiles(TestCasePlaybook):
 
     def test_profiles(
         self, profile_name: str, pytestconfig: object, monkeypatch: object, options: object
-    ) -> None:  # pylint: disable=unused-argument
+    ) -> None:    # pylint: disable=unused-argument
         """Run pre-created testing profiles."""
 
         # initialize profile
@@ -73,9 +73,7 @@ class TestProfiles(TestCasePlaybook):
         # validate App outputs with Profile outputs
         validation.validate(self.profile.outputs)
 
-        # validate exit message
-        exit_message_data = self.profile.exit_message
-        if exit_message_data:
+        if exit_message_data := self.profile.exit_message:
             self.validate_exit_message(
                 exit_message_data.pop('expected_output'),
                 exit_message_data.pop('op'),

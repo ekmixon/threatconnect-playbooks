@@ -75,19 +75,21 @@ class ValidateCustom(Validate):
         r_expectation = expected_output
 
         if (
-            isinstance(r_value, str)
-            and isinstance(r_expectation, str)
-            and (r_value and r_expectation)
+            (
+                isinstance(r_value, str)
+                and isinstance(r_expectation, str)
+                and (r_value and r_expectation)
+            )
+            and r_value[0] == r_expectation[0]
+            and r_value[0] in ('[', '{')
         ):
-
-            if r_value[0] == r_expectation[0] and r_value[0] in ('[', '{'):
-                try:
-                    rj = json.loads(r_value)
-                    re = json.loads(r_expectation)
-                    r_value = rj
-                    r_expectation = re
-                except Exception:  # nosec  it it cant load as json, oh well
-                    pass
+            try:
+                rj = json.loads(r_value)
+                re = json.loads(r_expectation)
+                r_value = rj
+                r_expectation = re
+            except Exception:  # nosec  it it cant load as json, oh well
+                pass
 
         r_value = reduce_structure(r_value)
         r_expectation = reduce_structure(r_expectation)
@@ -103,10 +105,9 @@ class ValidateCustom(Validate):
             and isinstance(r_value, (dict, list))
             and isinstance(r_expectation, (dict, list))
         ):
-            dd = DeepDiff(r_value, r_expectation, ignore_order=True)
-            if not dd:
-                passed = True
-            else:
+            if dd := DeepDiff(r_value, r_expectation, ignore_order=True):
                 assert_error = f'Structural differences in {variable} output: {dd}'
 
+            else:
+                passed = True
         assert passed, assert_error

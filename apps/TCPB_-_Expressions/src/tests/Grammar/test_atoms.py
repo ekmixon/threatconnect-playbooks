@@ -32,9 +32,7 @@ class exactly(object):
         """exact comparision"""
         if self.value != other:
             return False
-        if self.value.__class__ != other.__class__:
-            return False
-        return True
+        return self.value.__class__ == other.__class__
 
     def __repr__(self):
         """repr"""

@@ -22,4 +22,4 @@ class App(PlaybookApp):
 
         self.tcex.playbook.create_output('detectedLanguageCode', detected_language_code, 'String')
         self.tcex.playbook.create_output('detectedLanguageProbability', detected_language_probability, 'String')
-        self.exit_message = 'Detected the language as {} (with a probability of {})'.format(detected_language_code, detected_language_probability)
+        self.exit_message = f'Detected the language as {detected_language_code} (with a probability of {detected_language_probability})'

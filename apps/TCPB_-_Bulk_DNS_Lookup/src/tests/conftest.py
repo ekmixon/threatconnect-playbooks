@@ -21,11 +21,11 @@ def profiles(profiles_dir: str) -> list:
     Returns:
         list: All profile names for the current test case.
     """
-    profile_names = []
-    for filename in sorted(os.listdir(profiles_dir)):
-        if filename.endswith('.json'):
-            profile_names.append(filename.replace('.json', ''))
-    return profile_names
+    return [
+        filename.replace('.json', '')
+        for filename in sorted(os.listdir(profiles_dir))
+        if filename.endswith('.json')
+    ]
 
 
 def pytest_addoption(parser: object) -> None:
@@ -88,7 +88,7 @@ def clear_log_directory() -> None:
                 os.remove(file_path)
 
 
-def pytest_unconfigure(config: object) -> None:  # pylint: disable=unused-argument
+def pytest_unconfigure(config: object) -> None:    # pylint: disable=unused-argument
     """Execute unconfigure logic before test process is exited."""
     log_directory = os.path.join(os.getcwd(), 'log')
 
@@ -106,12 +106,11 @@ def pytest_unconfigure(config: object) -> None:  # pylint: disable=unused-argume
     test_log_file = os.path.join(log_directory, 'tests.log')
     if os.path.isfile(test_log_file):
         with open(test_log_file) as fh:
-            issues = []
-            for line in fh:
-                if '- ERROR - ' in line or '- WARNING - ' in line:
-                    issues.append(line.strip())
-
-            if issues:
+            if issues := [
+                line.strip()
+                for line in fh
+                if '- ERROR - ' in line or '- WARNING - ' in line
+            ]:
                 print('\nErrors and Warnings:')
                 for i in issues:
                     print(f'- {i}')

@@ -15,5 +15,5 @@ def test_playbook_format():
                     try:
                         json.loads(playbook_file_text)
                     except json.decoder.JSONDecodeError as e:
-                        print("Error reading {}".format(os.path.join(path, file_)))
+                        print(f"Error reading {os.path.join(path, file_)}")
                         raise e

@@ -102,9 +102,7 @@ def reduce_structure(value):
     """Reduce a structure to a prototypical form"""
 
     if isinstance(value, dict):
-        result = {}
-        for key in value:
-            result[key] = reduce_structure(value[key])
+        result = {key: reduce_structure(value[key]) for key in value}
     elif isinstance(value, (list, tuple)):
         result = [reduce_structure(x) for x in value]
         if len(result) > 1:
@@ -198,9 +196,6 @@ def describe_string(value):
                         if not condition(mv):
                             # print(f'\t{name} condition failed {condition}')
                             all_conditions = False
-                        else:
-                            # print(f'\t{name} condition passed {condition}')
-                            pass
                     except Exception:
                         all_conditions = False
                         # print(f'\t{name} condition raised exception {condition}')
@@ -222,32 +217,25 @@ def describe_string(value):
         return 'string'
 
     name, regex, search, match, conditions = possibles[0]
-    #
-    # TODO -- apply as many of the non-overlapping possibles in one
-    # pass
-    #
+    if not search:
+        return name
 
-    if search:
-        left = search.string[: search.start()]
-        right = search.string[search.end() :]  # noqa: E203
+    left = search.string[: search.start()]
+    right = search.string[search.end() :]  # noqa: E203
 
-        r = []
-        if left:
-            left = describe_string(left)
-            if left:
-                r.append(left)
-        r.append(name)
+    r = []
+    if left:
+        left = describe_string(left)
+    if left:
+        r.append(left)
+    r.append(name)
 
-        if right:
-            right = describe_string(right)
-            if right:
-                r.append(right)
+    if right:
+        right = describe_string(right)
+    if right:
+        r.append(right)
 
-        result = ' '.join(r)
-    else:
-        result = name
-
-    return result
+    return ' '.join(r)
 
 
 def compare_structure(source, target, match_null=False):
@@ -257,9 +245,7 @@ def compare_structure(source, target, match_null=False):
 
     if isinstance(source, (list, tuple)) and isinstance(target, (list, tuple)):
         if not source or not target:
-            if match_null:
-                return True
-            return False
+            return bool(match_null)
         return compare_structure(source[0], target[0], match_null=True)
 
     if source == target:
@@ -271,15 +257,19 @@ def compare_structure(source, target, match_null=False):
         if sorted(source.keys()) != sorted(target.keys()):
             return False
 
-        for key in source:
-            if not compare_structure(source[key], target[key], match_null=True):
-                return False
-
-        return True
+        return all(
+            compare_structure(source[key], target[key], match_null=True)
+            for key in source
+        )
 
     # OK, curveball -- we'll match 'null'/None as a wildcard match
 
-    if match_null and (source is None or source == 'null' or target is None or target == 'null'):
-        return True
-
-    return False
+    return bool(
+        match_null
+        and (
+            source is None
+            or source == 'null'
+            or target is None
+            or target == 'null'
+        )
+    )

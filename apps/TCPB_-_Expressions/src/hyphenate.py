@@ -70,19 +70,18 @@ class Hyphenator:
         if word.lower() in self.exceptions:
             points = self.exceptions[word.lower()]
         else:
-            work = '.' + word.lower() + '.'
+            work = f'.{word.lower()}.'
             points = [0] * (len(work) + 1)
             for i in range(len(work)):
                 t = self.tree
                 for c in work[i:]:
-                    if c in t:
-                        t = t[c]
-                        if None in t:
-                            p = t[None]
-                            for j, p_j in enumerate(p):
-                                points[i + j] = max(points[i + j], p_j)
-                    else:
+                    if c not in t:
                         break
+                    t = t[c]
+                    if None in t:
+                        p = t[None]
+                        for j, p_j in enumerate(p):
+                            points[i + j] = max(points[i + j], p_j)
             # No hyphens in the first two chars or the last two.
             points[1] = points[2] = points[-2] = points[-3] = 0
 

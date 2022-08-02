@@ -84,8 +84,7 @@ class RexxParser:
         intermediate = deque()
 
         while pattern:
-            match = tokenize_re.match(pattern)
-            if match:
+            if match := tokenize_re.match(pattern):
                 token = match.groups()[0]
                 intermediate.append(self.encode_token(token))
                 pattern = pattern[match.end() :]
@@ -134,8 +133,7 @@ class RexxParser:
             return string
 
         try:
-            i = int(string)
-            return i
+            return int(string)
         except (TypeError, ValueError):
             pass
 
@@ -323,11 +321,11 @@ class RexxParser:
             if name not in self.context:
                 raise KeyError(name)
             result = self.context[name]
-        else:
-            if not hasattr(self.context, name):
-                raise AttributeError(name)
-
+        elif hasattr(self.context, name):
             result = getattr(self.context, name)
+
+        else:
+            raise AttributeError(name)
 
         if types:
             if not isinstance(types, list):

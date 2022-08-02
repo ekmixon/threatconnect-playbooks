@@ -21,24 +21,13 @@ def name_val_transform(obj: dict):
     if not isinstance(obj, (dict, OrderedDict)):
         return obj
 
-    namekey = None
-    valuekey = None
-
     keys = list(obj.keys())
 
-    for key in keys:
-        if 'name' in key.lower():
-            namekey = key
-            break
-
+    namekey = next((key for key in keys if 'name' in key.lower()), None)
     if not namekey:
         return obj
 
-    for key in keys:
-        if key != namekey:
-            valuekey = key
-            break
-
+    valuekey = next((key for key in keys if key != namekey), None)
     return OrderedDict({obj[namekey]: obj[valuekey]})
 
 
@@ -119,9 +108,8 @@ def walk_xml(
         tag = tag.split('}', 1)[1]
 
     value = element.text
-    if strip:
-        if isinstance(value, str):
-            value = value.strip()
+    if strip and isinstance(value, str):
+        value = value.strip()
 
     if transform and callable(transform):
         value = transform(value)
@@ -129,18 +117,17 @@ def walk_xml(
     if convert:
         value = convert_value(value)
 
-    children = []
-    for sub in element:
-        children.append(
-            walk_xml(
-                sub,
-                namespace=namespace,
-                strip=strip,
-                convert=convert,
-                compact=compact,
-                transform=transform,
-            )
+    children = [
+        walk_xml(
+            sub,
+            namespace=namespace,
+            strip=strip,
+            convert=convert,
+            compact=compact,
+            transform=transform,
         )
+        for sub in element
+    ]
 
     if compact and children:
         children = compact_dict(children, name=tag)
@@ -172,12 +159,11 @@ def xml_to_dict(
             etree = ElementTree.parse(StringIO(xmldata))
             break
         except Exception as e:
-            if 'junk after document element' in str(e) and not wrap:
-                xmldata = '<X_PARSE_ROOT>\n' + xmldata + '\n</X_PARSE_ROOT>'
-                wrap = True
-            else:
+            if 'junk after document element' not in str(e) or wrap:
                 raise
 
+            xmldata = '<X_PARSE_ROOT>\n' + xmldata + '\n</X_PARSE_ROOT>'
+            wrap = True
     result = walk_xml(
         etree.getroot(),
         namespace=namespace,
@@ -205,14 +191,8 @@ def tag_for(name, attributes=None, close=False, prefix='', namespace=None):
     if '}' in name:
         nsprefix, tag = name.split('}', 1)
         nsprefix = nsprefix[1:]
-        ns = None
-        for key, value in namespace.items():
-            if value == nsprefix:
-                ns = key
-                break
-        if ns:
-            name = f'{ns}:{tag}'
-        else:
+        ns = next((key for key, value in namespace.items() if value == nsprefix), None)
+        if not ns:
             i = 1
             while True:
                 ns = f'ns{i}'
@@ -220,10 +200,9 @@ def tag_for(name, attributes=None, close=False, prefix='', namespace=None):
                     namespace[ns] = prefix
                     break
                 i += 1
-            name = f'{ns}:{tag}'
-
-    attr = []
+        name = f'{ns}:{tag}'
     if not close:
+        attr = []
         for key, value in attributes.items():
             value = quoteattr(value)
             attr.append(f'{key}={value}')
@@ -231,11 +210,7 @@ def tag_for(name, attributes=None, close=False, prefix='', namespace=None):
     else:
         attrs = ''
 
-    if close:
-        closetag = '/'
-    else:
-        closetag = ''
-
+    closetag = '/' if close else ''
     parts = [name]
     if attrs:
         parts.append(attrs)
@@ -246,11 +221,7 @@ def tag_for(name, attributes=None, close=False, prefix='', namespace=None):
 def dict_to_xml(ob: dict, namespace=False, indent=0, _depth=0):
     """Convert a dictionary back to XML"""
 
-    if indent:
-        prefix = ' ' * indent * _depth
-    else:
-        prefix = ''
-
+    prefix = ' ' * indent * _depth if indent else ''
     parts = []
     attrs = {}
 
@@ -264,11 +235,7 @@ def dict_to_xml(ob: dict, namespace=False, indent=0, _depth=0):
 
     elif isinstance(ob, (dict, OrderedDict)):
         # Pass 1, collect attributes
-        attrs = {}
-        for name, value in ob.items():
-            if name.startswith('@'):
-                attrs[name[1:]] = value
-
+        attrs = {name[1:]: value for name, value in ob.items() if name.startswith('@')}
         # Pass 2, resolve voaluesresolve voaluesresolve voalues
         for name, value in ob.items():
             if name.startswith('@'):
@@ -295,6 +262,4 @@ def dict_to_xml(ob: dict, namespace=False, indent=0, _depth=0):
         # print(f'toXML: {parts}')
         return parts
 
-    if indent:
-        return '\n'.join(parts)
-    return ''.join(parts)
+    return '\n'.join(parts) if indent else ''.join(parts)

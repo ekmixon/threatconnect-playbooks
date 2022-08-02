@@ -17,7 +17,7 @@ def main():
     """."""
     args = parse_arguments()
     yara_rule = tcex.playbook.read(args.yara_rule)
-    tcex.log.info('Yara rule: {}'.format(yara_rule))
+    tcex.log.info(f'Yara rule: {yara_rule}')
 
     validator = yara_validator.YaraValidator()
     validator.add_rule_source(rule)
@@ -41,10 +41,10 @@ def main():
         validation_status = "UNKNOWN"
         source = ""
 
-    tcex.log.debug('validationStatus: {}'.format(validation_status))
-    tcex.log.debug('errorData: {}'.format(error_data))
-    tcex.log.debug('repairedSource: {}'.format(repaired_source))
-    tcex.log.debug('source: {}'.format(source))
+    tcex.log.debug(f'validationStatus: {validation_status}')
+    tcex.log.debug(f'errorData: {error_data}')
+    tcex.log.debug(f'repairedSource: {repaired_source}')
+    tcex.log.debug(f'source: {source}')
 
     tcex.playbook.create_output('validationStatus', validation_status)
     tcex.playbook.create_output('errorData', error_data)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     except SystemExit:
         pass
     except Exception as e:  # if there are any strange errors, log it to the logging in the UI
-        err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(err)
         tcex.exit(1)

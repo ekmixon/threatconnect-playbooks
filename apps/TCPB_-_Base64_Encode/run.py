@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Playbook App"""
+
 import traceback
 import sys
 
@@ -32,7 +33,7 @@ if __name__ == '__main__':
                 # run action method
                 getattr(app, app.args.tc_action)()
             except AttributeError:
-                tcex.exit(1, 'Action method ({}) was not found.'.format(app.args.tc_action))
+                tcex.exit(1, f'Action method ({app.args.tc_action}) was not found.')
         else:
             # default to run method
             app.run()
@@ -47,6 +48,6 @@ if __name__ == '__main__':
         tcex.playbook.exit(msg=app.exit_message)
 
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.playbook.exit(1, main_err)

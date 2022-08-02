@@ -21,15 +21,12 @@ def main():
     string = tcex.playbook.read(args.string)
     n_gram_number = int(tcex.playbook.read(args.n_gram))
 
-    tcex.log.info('String value: {}'.format(string))
-    tcex.log.info('n-gram number: {}'.format(n_gram_number))
+    tcex.log.info(f'String value: {string}')
+    tcex.log.info(f'n-gram number: {n_gram_number}')
 
     blob = TextBlob(string)
 
-    tags = dict()
-    for tag in blob.tags:
-        tags[tag[0]] = tag[1]
-
+    tags = {tag[0]: tag[1] for tag in blob.tags}
     tcex.playbook.create_output('json', blob.json)
     tcex.playbook.create_output('nGrams', [str(n_gram) for n_gram in blob.ngrams(n=n_gram_number)])
     tcex.playbook.create_output('nounPhrases', blob.noun_phrases)
@@ -53,7 +50,7 @@ if __name__ == "__main__":
     except SystemExit:
         pass
     except Exception as e:  # if there are any strange errors, log it to the logging in the UI
-        err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(err)
         tcex.exit(1)

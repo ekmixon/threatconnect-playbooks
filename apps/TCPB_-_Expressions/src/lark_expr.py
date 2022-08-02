@@ -144,34 +144,29 @@ class Evaluate(Transformer):
     def get(self, ob, key):
         """get"""
 
-        result = operator.getitem(ob, key)
-        return result
+        return operator.getitem(ob, key)
 
     def dict_freeze(self, a):
         """freeze (produce) a dictionary"""
 
         if not isinstance(a, list):
             a = [a]
-        result = {}
-        for kw in a:
-            result[kw.name] = kw.value
-        return result
+        return {kw.name: kw.value for kw in a}
 
     def list_freeze(self, a):
         """freeze a into a list"""
         # print(f'>>> list_freeze {a!r}')
-        if not isinstance(a, open_list):
-            return [
+        return (
+            list(a)
+            if isinstance(a, open_list)
+            else [
                 a,
             ]
-        return list(a)
+        )
 
     def tuple_freeze(self, a):
         """freeze a into a tuple"""
-        if not isinstance(a, open_list):
-            return a
-        # print(f'>>> tuple_freeze {a!r}')
-        return tuple(a)
+        return tuple(a) if isinstance(a, open_list) else a
 
     def function(self, name, args):
         """call function"""
@@ -188,11 +183,11 @@ class Evaluate(Transformer):
         for arg in args:
             if isinstance(arg, kwarg):
                 kwargs[arg.name] = arg.value
+            elif kwargs:
+                raise SyntaxError(
+                    f'Positional parameter {arg} must not follow keyword parameters'
+                )
             else:
-                if kwargs:
-                    raise SyntaxError(
-                        f'Positional parameter {arg} must not follow keyword parameters'
-                    )
                 arglist.append(arg)
 
         f = self.namespace.get(name, __notfound__)
@@ -216,9 +211,7 @@ class Evaluate(Transformer):
     def tcvariable(self, name):
         """Look up variable in REDIS"""
 
-        if self.redis_helper:
-            return self.redis_helper(name)
-        return None
+        return self.redis_helper(name) if self.redis_helper else None
 
     def getattr(self, base, name):
         """getattr"""
@@ -227,9 +220,7 @@ class Evaluate(Transformer):
                 base = json.loads(tcvar)
             except Exception:
                 pass
-        if isinstance(base, dict):
-            return base.get(name)
-        return getattr(base, name)
+        return base.get(name) if isinstance(base, dict) else getattr(base, name)
 
     def get_slice(self, base, start=None, end=None):
         """get_slice"""
@@ -351,9 +342,11 @@ class Expression(ExpressionMethods):
             return [self.encapsulate(x) for x in ob]
 
         if isinstance(ob, dict):
-            result = {}
-            for key, value in ob.items():
-                result[self.encapsulate(key)] = self.encapsulate(value)
+            result = {
+                self.encapsulate(key): self.encapsulate(value)
+                for key, value in ob.items()
+            }
+
             return result
 
         return ob
@@ -382,9 +375,11 @@ class Expression(ExpressionMethods):
             return [self.deencapsulate(x) for x in ob]
 
         if isinstance(ob, dict):
-            result = {}
-            for key, value in ob.items():
-                result[self.deencapsulate(key)] = self.deencapsulate(value)
+            result = {
+                self.deencapsulate(key): self.deencapsulate(value)
+                for key, value in ob.items()
+            }
+
             return result
 
         return ob
@@ -429,8 +424,7 @@ class Expression(ExpressionMethods):
         while isinstance(result, tcvar):
             if self.trace:
                 tracecd = 'R'
-                if isinstance(result, tcvar):
-                    tracecd = 'T'
+                tracecd = 'T'
                 self.trace(f'={tracecd}= {result!r}')
 
             result = self.deencapsulate(result)
@@ -469,10 +463,7 @@ class Expression(ExpressionMethods):
         # it is NOT callable
 
         result = getattr(self, variable.lower(), __notfound2__)
-        if result is not __notfound2__ and not callable(result):
-            return result
-
-        return default
+        return default if result is __notfound2__ or callable(result) else result
 
     def set(self, variable, value):
         """set a variable"""
@@ -590,11 +581,11 @@ def interactive(record=False, trace=False):
             # print(traceback.format_exc())
             print(traceback.format_exc(limit=0).rstrip().split('\n')[-1])
             if record:
-                args = tuple([str(x) for x in e.args])  # pylint: disable=consider-using-generator
+                args = tuple(str(x) for x in e.args)
                 fh.write(f'    ({expr!r}, {e.__class__.__name__}{args!r}),\n')
 
 
 if __name__ == '__main__':
-    record_flag = bool('--record' in sys.argv)
-    trace_flag = bool('--trace' in sys.argv)
+    record_flag = '--record' in sys.argv
+    trace_flag = '--trace' in sys.argv
     interactive(record=record_flag, trace=trace_flag)

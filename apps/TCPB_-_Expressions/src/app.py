@@ -48,11 +48,7 @@ class IterTracker(object):
             else:
                 return None
 
-        result = {}
-        for name in self.names:
-            result[name] = self.values[name][self.index]
-
-        return result
+        return {name: self.values[name][self.index] for name in self.names}
 
     def current(self):
         """Get the current values"""
@@ -62,11 +58,7 @@ class IterTracker(object):
 
         index = max(self.index, 0)
 
-        result = {}
-        for name in self.names:
-            result[name] = self.values[name][index]
-
-        return result
+        return {name: self.values[name][index] for name in self.names}
 
 
 class App(PlaybookApp):
@@ -116,7 +108,7 @@ class App(PlaybookApp):
             for arg in tb.tb_frame.f_code.co_varnames:
                 value = repr(tb.tb_frame.f_locals.get(arg))
                 if len(value) > 12:
-                    value = value[:12] + '...'
+                    value = f'{value[:12]}...'
                     if value.startswith('"'):
                         value += '"'
                     elif value.startswith("'"):
@@ -265,7 +257,7 @@ class App(PlaybookApp):
 
         # 1.0.6 -- set individual loop values with leading underscore to None
         for key in exprs:
-            self.engine.set('_' + key, None)
+            self.engine.set(f'_{key}', None)
 
         while looping:
             # t  Trackers are ordered from shortest to longest
@@ -278,11 +270,7 @@ class App(PlaybookApp):
             while this_iter:
                 tracker = this_iter.pop(0)
 
-                if get_next:
-                    vars_ = tracker.next(wrap=False)
-                else:
-                    vars_ = tracker.current()
-
+                vars_ = tracker.next(wrap=False) if get_next else tracker.current()
                 get_next = False
 
                 if vars_ is None:
@@ -308,7 +296,7 @@ class App(PlaybookApp):
                     self.tcex.log.trace(f'... = {result!r}')
 
                     # 1.0.6 -- add individual loop result with leading underscore
-                    self.engine.set('_' + expr_key, result)
+                    self.engine.set(f'_{expr_key}', result)
 
                     out = outdict.get(expr_key, [])
 

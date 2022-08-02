@@ -26,9 +26,7 @@ class exactly(object):
         """exact comparision"""
         if self.value != other:
             return False
-        if self.value.__class__ != other.__class__:
-            return False
-        return True
+        return self.value.__class__ == other.__class__
 
     def __repr__(self):
         """repr"""
@@ -53,9 +51,7 @@ class nearly(object):
                 return False
         elif self.value != other:
             return False
-        if self.value.__class__ != other.__class__:
-            return False
-        return True
+        return self.value.__class__ == other.__class__
 
     def __repr__(self):
         """repr"""
@@ -75,9 +71,7 @@ class sametype(object):
 
     def __eq__(self, other):
         """exact comparision"""
-        if type(other) == type(self.value):  # pylint: disable=C0123
-            return True
-        return False
+        return type(other) == type(self.value)
 
     def __repr__(self):
         """repr"""
@@ -1117,12 +1111,7 @@ class TestFunctions(object):
             if method in tested:
                 tested[method] = True
 
-        missing = []
-        for method, checked in tested.items():
-            if checked:
-                continue
-            missing.append(method)
-
+        missing = [method for method, checked in tested.items() if not checked]
         missing.sort()
         missing_tests = ', '.join(missing)
 

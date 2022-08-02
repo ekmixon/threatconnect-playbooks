@@ -290,13 +290,9 @@ class ExpressionMethods:
         """Return the binary value of int"""
         result = bin(n)
         if result.startswith('-'):
-            if sign:
-                result = '-' + result[3:]
-            else:
-                result = result[3:]
+            return f'-{result[3:]}' if sign else result[3:]
         else:
-            result = result[2:]
-        return result
+            return result[2:]
 
     @staticmethod
     def f_build(*lists, keys=()):
@@ -314,9 +310,11 @@ class ExpressionMethods:
             lists = lists[0]
 
         for row in zip(*lists):
-            rowdict = {}
-            for column in range(min(numkeys, len(row))):
-                rowdict[keys[column]] = row[column]
+            rowdict = {
+                keys[column]: row[column]
+                for column in range(min(numkeys, len(row)))
+            }
+
             result.append(rowdict)
 
         return result
@@ -359,9 +357,7 @@ class ExpressionMethods:
     def f_choice(condition, true_result=None, false_result=None):
         """Choice of true_result or false_result based on condition"""
 
-        if condition:
-            return true_result
-        return false_result
+        return true_result if condition else false_result
 
     @coerce
     @staticmethod
@@ -430,10 +426,7 @@ class ExpressionMethods:
                     except ValueError:
                         pass
                     if i is not None or f is not None:
-                        if f and i != f:
-                            value = f
-                        else:
-                            value = i
+                        value = f if f and i != f else i
                     rd.append(value)
                 rowdata = rd
 
@@ -445,10 +438,7 @@ class ExpressionMethods:
         if rows and len(result) > rows:
             result = result[:rows]
 
-        if rows == 1 or rows == 0 and len(result) == 1:
-            return result[0]
-
-        return result
+        return result[0] if rows == 1 or rows == 0 and len(result) == 1 else result
 
     @staticmethod
     def f_csvwrite(data, delimiter=',', quote='"'):
@@ -545,17 +535,14 @@ class ExpressionMethods:
         regexes = self.f_indicator_patterns()
 
         bytesmode = isinstance(data, bytes)
-        if bytesmode:
-            flags = re.MULTILINE | re.DOTALL
-        else:
-            flags = re.MULTILINE
-
+        flags = re.MULTILINE | re.DOTALL if bytesmode else re.MULTILINE
         encoding = convert if isinstance(convert, str) else 'utf-8'
 
-        extra_ignore = []
-        for ignorable in ignore:
-            if isinstance(ignorable, bytes):
-                extra_ignore.append(ignorable.decode(encoding))
+        extra_ignore = [
+            ignorable.decode(encoding)
+            for ignorable in ignore
+            if isinstance(ignorable, bytes)
+        ]
 
         ignore.extend(extra_ignore)
 
@@ -604,11 +591,14 @@ class ExpressionMethods:
 
         indicator_types = self.f_indicator_types()
 
-        for indicator_type in indicator_types:
-            if indicator_type.get('name') == name:
-                return indicator_type.get('apiBranch')
-
-        return None
+        return next(
+            (
+                indicator_type.get('apiBranch')
+                for indicator_type in indicator_types
+                if indicator_type.get('name') == name
+            ),
+            None,
+        )
 
     def f_fetch_indicators(
         self, *search_values: Union[list, tuple], default_type=None
@@ -630,14 +620,16 @@ class ExpressionMethods:
 
         result = []
 
-        if len(search_values) == 1:  # did we get passed in a nested list?
-            if isinstance(search_values[0], (list, tuple)):
-                if len(search_values[0]) > 0:
-                    if isinstance(search_values[0][0], (list, tuple)):
-                        search_values = search_values[0]  # un-nest
-                    elif not self.indicator_name_to_branch(search_values[0][0]):
-                        # if the first word in the tuple isn't a type, un-nest it
-                        search_values = search_values[0]  # un-nest
+        if (
+            len(search_values) == 1
+            and isinstance(search_values[0], (list, tuple))
+            and len(search_values[0]) > 0
+        ):
+            if isinstance(search_values[0][0], (list, tuple)):
+                search_values = search_values[0]  # un-nest
+            elif not self.indicator_name_to_branch(search_values[0][0]):
+                # if the first word in the tuple isn't a type, un-nest it
+                search_values = search_values[0]  # un-nest
 
         for search_value in search_values:
             source = search_value
@@ -668,9 +660,7 @@ class ExpressionMethods:
                 answer = answer.get(api_entity)
 
             if answer:
-                owners = self.tcex.session.get(
-                    path + '/owners',
-                ).json()
+                owners = self.tcex.session.get(f'{path}/owners').json()
                 if owners.get('status') != 'Success':
                     owners = None
                 else:
@@ -678,9 +668,7 @@ class ExpressionMethods:
 
                 answer['owners'] = owners
 
-                observationCount = self.tcex.session.get(
-                    path + '/observationCount',
-                ).json()
+                observationCount = self.tcex.session.get(f'{path}/observationCount').json()
                 if observationCount.get('status') != 'Success':
                     observationCount = None
                 else:
@@ -690,9 +678,7 @@ class ExpressionMethods:
 
                 answer['observationCount'] = observationCount
 
-                attributes = self.tcex.session.get(
-                    path + '/attributes',
-                ).json()
+                attributes = self.tcex.session.get(f'{path}/attributes').json()
                 if attributes.get('status') != 'Success':
                     attributes = None
                 else:
@@ -700,9 +686,7 @@ class ExpressionMethods:
 
                 answer['attribute'] = attributes
 
-                securitylabels = self.tcex.session.get(
-                    path + '/securityLabels',
-                ).json()
+                securitylabels = self.tcex.session.get(f'{path}/securityLabels').json()
                 if securitylabels.get('status') != 'Success':
                     securitylabels = None
                 else:
@@ -710,9 +694,7 @@ class ExpressionMethods:
 
                 answer['securityLabel'] = securitylabels
 
-                groups = self.tcex.session.get(
-                    path + '/groups',
-                ).json()
+                groups = self.tcex.session.get(f'{path}/groups').json()
                 if groups.get('status') != 'Success':
                     groups = None
                 else:
@@ -720,9 +702,7 @@ class ExpressionMethods:
 
                 answer['associations'] = groups
 
-                tags = self.tcex.session.get(
-                    path + '/tags',
-                ).json()
+                tags = self.tcex.session.get(f'{path}/tags').json()
                 if tags.get('status') != 'Success':
                     tags = None
                 else:
@@ -786,10 +766,7 @@ class ExpressionMethods:
         score = edit_dist(sum1, sum2) * 64 / (len(input1) + len(input2))
 
         score = (score * 100.0) / 64
-        if score >= 100:
-            return 0
-
-        return 100.0 - score
+        return 0 if score >= 100 else 100.0 - score
 
     @coerce
     @staticmethod
@@ -810,13 +787,9 @@ class ExpressionMethods:
         """Return the hexadecimal value of int"""
         result = hex(n)
         if result.startswith('-'):
-            if sign:
-                result = '-' + result[3:]
-            else:
-                result = result[3:]
+            return f'-{result[3:]}' if sign else result[3:]
         else:
-            result = result[2:]
-        return result
+            return result[2:]
 
     @coerce
     @staticmethod

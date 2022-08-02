@@ -12,30 +12,14 @@ def mergearray(array1: Union[str, List[str]], array2: Union[str, List[str]]) -> 
     to an apply of a diff.  If the inputs are strings they are split
     on newline."""
 
-    if isinstance(array1, str):
-        a1 = array1.split('\n')
-    else:
-        a1 = array1
-
-    if isinstance(array2, str):
-        a2 = array2.split('\n')
-    else:
-        a2 = array2
-
+    a1 = array1.split('\n') if isinstance(array1, str) else array1
+    a2 = array2.split('\n') if isinstance(array2, str) else array2
     r1 = []
     pending = []
 
     while a1 or a2:
-        if a1:
-            v1 = a1.pop(0)
-        else:
-            v1 = ''
-
-        if a2:
-            v2 = a2.pop(0)
-        else:
-            v2 = ''
-
+        v1 = a1.pop(0) if a1 else ''
+        v2 = a2.pop(0) if a2 else ''
         # if the two lines match, consume both
         if v1 == v2:
             if pending:

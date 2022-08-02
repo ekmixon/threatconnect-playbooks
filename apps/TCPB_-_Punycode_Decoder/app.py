@@ -20,7 +20,7 @@ class App(PlaybookApp):
             self.updated_domain = domain.encode('idna').decode('utf-8')
         elif action == 'encode':
             self.updated_domain = domain.encode('utf-8').decode('idna')
-        self.exit_message = '{} has been {}ed to {}'.format(domain, action, self.updated_domain)
+        self.exit_message = f'{domain} has been {action}ed to {self.updated_domain}'
 
     def write_output(self):
         """Write the Playbook output variables.

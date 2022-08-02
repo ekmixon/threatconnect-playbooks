@@ -60,16 +60,15 @@ def _spamsum(s, block_size, digest_len, legacy_mode):
         sh.update(c)
         rh.update(c)
 
-        if (rh.hash % block_size) == (block_size - 1):
-            if yielded < (digest_len - 1):
-                yield sh.hash
-                yielded += 1
-                sh = SumHash()
-
-    if rh.hash != 0:
-        # No need to yield initial hash, unless mimicing the original
-        if legacy_mode or sh.hash != SumHash().hash:
+        if (rh.hash % block_size) == (block_size - 1) and yielded < (
+            digest_len - 1
+        ):
             yield sh.hash
+            yielded += 1
+            sh = SumHash()
+
+    if rh.hash != 0 and (legacy_mode or sh.hash != SumHash().hash):
+        yield sh.hash
 
 
 def _block_size(s):

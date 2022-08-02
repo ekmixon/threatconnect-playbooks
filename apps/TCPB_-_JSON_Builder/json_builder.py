@@ -25,13 +25,13 @@ def main():
     try:
         json.loads(json_data)
     except Exception as e:
-        err = 'JSON data was not properly formatted ({}).'.format(e)
+        err = f'JSON data was not properly formatted ({e}).'
         tcex.log.error(err)
         tcex.message_tc(err)
         tcex.playbook.exit(1)
 
     # create output
-    tcex.log.info('JSON data: {}'.format(json_data))
+    tcex.log.info(f'JSON data: {json_data}')
     tcex.playbook.create_output('json.data', json_data)
 
     tcex.message_tc('JSON data has been created.')
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(main_err)
         tcex.playbook.exit(1)

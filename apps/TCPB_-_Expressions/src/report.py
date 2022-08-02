@@ -52,19 +52,14 @@ class Report:
         self.headers = headers
         self.lineno = 0
         self.record = {}
-        if width:
-            self.fixedwidth = width
-        else:
-            self.fixedwidth = 0
+        self.fixedwidth = width or 0
         self.width = width or self.auto_width()
         self.prolog = self.format(prolog)
         self.epilog = self.format(epilog)
 
         self.all_fields = []
         for row in fields:
-            for key in row:
-                if key not in self.all_fields:
-                    self.all_fields.append(key)
+            self.all_fields.extend(key for key in row if key not in self.all_fields)
 
     def __str__(self):
         """__str__"""
@@ -74,13 +69,11 @@ class Report:
     def add(self, **kwargs):
         """Add a new result row to this report"""
 
-        row = {}
+        row = {
+            key: kwargs.pop(key) if key in kwargs else ''
+            for key in self.all_fields
+        }
 
-        for key in self.all_fields:
-            if key in kwargs:
-                row[key] = kwargs.pop(key)
-            else:
-                row[key] = ''
 
         # any unconsumed kwargs *could* be checked here
         for key, value in kwargs.items():
@@ -128,12 +121,11 @@ class Report:
         if data is None:
             data = {}
 
-        if self.formatter and callable(self.formatter):
-            value = self.formatter(value, data)
-        else:
-            value = value.format(**data)
-
-        return value
+        return (
+            self.formatter(value, data)
+            if self.formatter and callable(self.formatter)
+            else value.format(**data)
+        )
 
     @staticmethod
     def format_heading(value):
@@ -207,7 +199,7 @@ class Report:
         return value
 
     @lru_cache(50)
-    def parse_specifier(self, specifier):  # pylint: disable=no-self-use
+    def parse_specifier(self, specifier):    # pylint: disable=no-self-use
         """Parse a Specifier"""
 
         result = AttrDict()
@@ -217,11 +209,7 @@ class Report:
 
         parts = [self.deescape(x) for x in optionsRE.findall(specifier)]
         specifier = parts[0]
-        if len(parts) > 1:
-            options = parts[1:]
-        else:
-            options = []
-
+        options = parts[1:] if len(parts) > 1 else []
         if ':' not in specifier:
             specifier += ':0'
 
@@ -247,13 +235,9 @@ class Report:
         result = []
         if self.title:
             title_row = self.title.center(self.width)
-            result.append('')
-            result.append('')
-            result.append(title_row)
+            result.extend(('', '', title_row))
             underscores = ''.join(['-' if c != ' ' else ' ' for c in title_row])
-            result.append(underscores)
-            result.append('')
-
+            result.extend((underscores, ''))
         if self.prolog:
             result.append('')
             result.extend(self.render_data(self.prolog, str(self.width)))
@@ -264,7 +248,7 @@ class Report:
             for name, specification in self.fields[0].items():
                 spec = self.parse_specifier(specification)
                 title = spec.label or self.format_heading(name)
-                line += title.ljust(spec.width)[: spec.width] + ' '
+                line += f'{title.ljust(spec.width)[: spec.width]} '
             result.append(line)
 
             line = ''
@@ -312,10 +296,9 @@ class Report:
         value = str(value)
 
         postnewline = False
-        while value:
-            if value.replace(' ', '').replace('\n', '') == '' and not spec.notrim:
-                break  # stop if its only whitespace remaining
-
+        while value and not (
+            not value.replace(' ', '').replace('\n', '') and not spec.notrim
+        ):
             postnewline = False
             line = None
 
@@ -370,7 +353,7 @@ class Report:
             for block, specifier in line_blocks:
                 # print(f'block: {block}, {len(block)}')
                 if len(block) > row:
-                    line += self.pad_block(block[row], specifier) + ' '
+                    line += f'{self.pad_block(block[row], specifier)} '
                     found = True
                 else:
                     line += self.pad_block('', specifier) + ' '
@@ -428,7 +411,7 @@ class Report:
             ll = len(line.split('\n')[-1])
 
             if ll + lp < spec.width:
-                line += part + ' '
+                line += f'{part} '
             elif ll >= splitwidth:
                 parts.insert(0, part)
                 break

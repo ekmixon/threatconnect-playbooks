@@ -31,8 +31,8 @@ def main():
         tcex.exit(1)
 
     # log values
-    tcex.log.debug('String Array: {}'.format(array))
-    tcex.log.info('Operation: {}'.format(operation))
+    tcex.log.debug(f'String Array: {array}')
+    tcex.log.info(f'Operation: {operation}')
 
     results = None
     if operation == 'Sort':
@@ -48,7 +48,7 @@ def main():
     elif operation == 'Uppercase':
         results = [x.upper() for x in array]
     elif operation == 'Duplicates':
-        results = list(set([x for x in array if array.count(x) > 1]))
+        results = list({x for x in array if array.count(x) > 1})
     elif operation == 'Unique':
         results = list(set(array))
     # use array splice
@@ -57,12 +57,12 @@ def main():
     #     results = array
 
     # create output
-    tcex.log.debug('Results: {}'.format(results))
+    tcex.log.debug(f'Results: {results}')
     if results is not None:
         tcex.playbook.create_output('array.count', len(results))
         tcex.playbook.create_output('array.results', results)
 
-    tcex.message_tc('{} operation successfully applied on array.'.format(operation))
+    tcex.message_tc(f'{operation} operation successfully applied on array.')
     tcex.exit()
 
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        main_err = 'Generic Error.  See logs for more details ({}).'.format(e)
+        main_err = f'Generic Error.  See logs for more details ({e}).'
         tcex.log.error(traceback.format_exc())
         tcex.message_tc(main_err)
         tcex.playbook.exit(1)
